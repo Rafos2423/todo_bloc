@@ -25,6 +25,12 @@ class _HomeScreenState extends State<HomeScreen> {
         );
   }
 
+  editTodo(Todo todo, int index) {
+    context.read<TodoBloc>().add(
+          EditTodo(todo, index),
+        );
+  }
+
   alterTodo(int index) {
     context.read<TodoBloc>().add(AlterTodo(index));
   }
@@ -39,7 +45,6 @@ class _HomeScreenState extends State<HomeScreen> {
             .where((todo) => !todo.isDone)
             .toList();
         for (int i = 0; i < todos.length; i++) {
-
           alterTodo(i);
         }
         break;
@@ -71,42 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) {
-              TextEditingController controller1 = TextEditingController();
-              TextEditingController controller2 = TextEditingController();
-
-              return AlertDialog(
-                title: const Text('Добавить задачу'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    buildTextField(
-                        controller: controller1,
-                        hintText: 'Заголовок',
-                        context: context),
-                    const SizedBox(height: 10),
-                    buildTextField(
-                        controller: controller2,
-                        hintText: 'Описание',
-                        context: context),
-                  ],
-                ),
-                actions: [
-                  Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: buildTextButton(
-                        controller1: controller1,
-                        controller2: controller2,
-                        context: context),
-                  )
-                ],
-              );
-            },
-          );
-        },
+        onPressed: () => alertDialog('Добавить задачу', null, null, buildTextAddButton, null),
         backgroundColor: Theme.of(context).colorScheme.primary,
         child: const Icon(
           CupertinoIcons.add,
@@ -152,6 +122,44 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void alertDialog(String label, String? title, String? desc, Function function, int? index) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        TextEditingController controller1 = TextEditingController(text: title);
+        TextEditingController controller2 = TextEditingController(text: desc);
+
+        return AlertDialog(
+          title: Text(label),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              buildTextField(
+                  controller: controller1,
+                  hintText: 'Заголовок',
+                  context: context),
+              const SizedBox(height: 10),
+              buildTextField(
+                  controller: controller2,
+                  hintText: 'Описание',
+                  context: context),
+            ],
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: function(
+                  controller1: controller1,
+                  controller2: controller2,
+                  context: context,
+                  index: index),
+            )
+          ],
+        );
+      },
+    );
+  }
+
   Widget buildTextField({
     required TextEditingController controller,
     required String hintText,
@@ -178,10 +186,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildTextButton({
+  Widget buildTextAddButton({
     required TextEditingController controller1,
     required TextEditingController controller2,
     required BuildContext context,
+    int? index,
   }) {
     return TextButton(
       onPressed: () {
@@ -193,6 +202,42 @@ class _HomeScreenState extends State<HomeScreen> {
         );
         controller1.text = '';
         controller2.text = '';
+        Navigator.pop(context);
+      },
+      style: TextButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          side: BorderSide(
+            color: Theme.of(context).colorScheme.secondary,
+          ),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        foregroundColor: Theme.of(context).colorScheme.secondary,
+      ),
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        child: const Icon(
+          CupertinoIcons.check_mark,
+          color: Colors.green,
+        ),
+      ),
+    );
+  }
+
+    Widget buildTextSaveButton({
+    required TextEditingController controller1,
+    required TextEditingController controller2,
+    required BuildContext context,
+    required int index
+  }) {
+    return TextButton(
+      onPressed: () {
+        editTodo(
+          Todo(
+            title: controller1.text,
+            subtitle: controller2.text,
+          ),
+          index
+        );
         Navigator.pop(context);
       },
       style: TextButton.styleFrom(
@@ -235,37 +280,40 @@ class _HomeScreenState extends State<HomeScreen> {
     required BuildContext context,
     required int index,
   }) {
-    return Card(
-      color: Theme.of(context).colorScheme.primary,
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Slidable(
-        key: const ValueKey(0),
-        startActionPane: ActionPane(
-          motion: const ScrollMotion(),
-          children: [
-            SlidableAction(
-              onPressed: (_) {
-                removeTodo(todo);
-              },
-              backgroundColor: const Color(0xFFFE4A49),
-              foregroundColor: Colors.white,
-              icon: Icons.delete,
-              label: 'Удалить',
-            ),
-          ],
+    return GestureDetector(
+      onTap: () => alertDialog('Изменить задачу', todo.title, todo.subtitle, buildTextSaveButton, index),
+      child: Card(
+        color: Theme.of(context).colorScheme.primary,
+        elevation: 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
         ),
-        child: ListTile(
-          title: Text(todo.title),
-          subtitle: Text(todo.subtitle),
-          trailing: Checkbox(
-            value: todo.isDone,
-            activeColor: Theme.of(context).colorScheme.secondary,
-            onChanged: (value) {
-              alterTodo(index);
-            },
+        child: Slidable(
+          key: const ValueKey(0),
+          startActionPane: ActionPane(
+            motion: const ScrollMotion(),
+            children: [
+              SlidableAction(
+                onPressed: (_) {
+                  removeTodo(todo);
+                },
+                backgroundColor: const Color(0xFFFE4A49),
+                foregroundColor: Colors.white,
+                icon: Icons.delete,
+                label: 'Удалить',
+              ),
+            ],
+          ),
+          child: ListTile(
+            title: Text(todo.title),
+            subtitle: Text(todo.subtitle),
+            trailing: Checkbox(
+              value: todo.isDone,
+              activeColor: Theme.of(context).colorScheme.secondary,
+              onChanged: (value) {
+                alterTodo(index);
+              },
+            ),
           ),
         ),
       ),

@@ -12,6 +12,7 @@ class TodoBloc extends HydratedBloc<TodoEvent, TodoState> {
     on<AddTodo>(_onAddTodo);
     on<RemoveTodo>(_onRemoveTodo);
     on<AlterTodo>(_onAlterTodo);
+    on<EditTodo>(_onEditTodo);
   }
 
   void _onStarted(
@@ -57,6 +58,19 @@ class TodoBloc extends HydratedBloc<TodoEvent, TodoState> {
     emit(state.copyWith(status: TodoStatus.loading));
     try {
       state.todos[event.index].isDone = !state.todos[event.index].isDone;
+      emit(state.copyWith(todos: state.todos, status: TodoStatus.success));
+    } catch (e) {
+      emit(state.copyWith(status: TodoStatus.error));
+    }
+  }
+
+  void _onEditTodo(
+    EditTodo event,
+    Emitter<TodoState> emit,
+  ) {
+    emit(state.copyWith(status: TodoStatus.loading));
+    try {
+      state.todos[event.index] = event.todo;
       emit(state.copyWith(todos: state.todos, status: TodoStatus.success));
     } catch (e) {
       emit(state.copyWith(status: TodoStatus.error));
