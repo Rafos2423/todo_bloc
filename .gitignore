@@ -42,3 +42,14 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+.vs/todo_bloc/FileContentIndex/275062e2-42ad-42ad-bdde-d289eb58c670.vsidx
+.gitignore
+.gitignore
+.vs/todo_bloc/v17/Browse.VC.db-shm
+.gitignore
+.vs/todo_bloc/v17/Browse.VC.db-wal
+.vs/todo_bloc/v17/Browse.VC.db
+.vs/slnx.sqlite
+.vs/todo_bloc/FileContentIndex/192ae94c-f0df-4ae8-94d7-bf79800bb512.vsidx
+.vs/todo_bloc/v17/Browse.VC.opendb
+.vs/todo_bloc/FileContentIndex/549c7465-151a-4763-b3fb-e609cdc997bf.vsidx
