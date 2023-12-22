@@ -41,22 +41,20 @@ class _HomeScreenState extends State<HomeScreen> {
         List<Todo> todos = context
             .read<TodoBloc>()
             .state
-            .todos
-            .where((todo) => !todo.isDone)
-            .toList();
+            .todos;
         for (int i = 0; i < todos.length; i++) {
-          alterTodo(i);
+          if (!todos[i].isDone)
+            alterTodo(i);
         }
         break;
       case 'Отменить все':
         List<Todo> todos = context
             .read<TodoBloc>()
             .state
-            .todos
-            .where((todo) => todo.isDone)
-            .toList();
+            .todos;
         for (int i = 0; i < todos.length; i++) {
-          alterTodo(i);
+          if (todos[i].isDone)
+            alterTodo(i);
         }
         break;
       case 'Удалить все':
@@ -107,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(CalculateSize() / 20),
         child: BlocBuilder<TodoBloc, TodoState>(
           builder: (context, state) {
             if (state.status == TodoStatus.success) {
@@ -259,11 +257,28 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  double CalculateSize() {
+    double width = MediaQuery.of(context).size.width;
+    int length = context.read<TodoBloc>().state.todos.length;
+    bool oneLine = length * 300 < width;
+
+    if (oneLine)
+      return width / length;
+    else
+      return 300;
+  }
+
   Widget buildListViewTodos({
     required TodoState state,
     required BuildContext context,
   }) {
-    return ListView.builder(
+    var size = CalculateSize();
+    return GridView.builder(
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: size,
+        crossAxisSpacing: size / 20,
+        mainAxisSpacing: size / 20,
+      ),
       itemCount: state.todos.length,
       itemBuilder: (context, int i) {
         return buildListTile(
@@ -284,6 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
       foregroundColor: Colors.white,
       icon: Icons.delete,
       label: 'Удалить',
+      borderRadius: BorderRadius.circular(CalculateSize() / 20),
     );
   }
 
@@ -296,6 +312,7 @@ class _HomeScreenState extends State<HomeScreen> {
       foregroundColor: Colors.white,
       icon: Icons.cancel,
       label: 'Отменить',
+      borderRadius: BorderRadius.circular(CalculateSize() / 20),
     );
   }
 
@@ -308,6 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
       foregroundColor: Colors.white,
       icon: Icons.check,
       label: 'Выполнить',
+      borderRadius: BorderRadius.circular(CalculateSize() / 20),
     );
   }
 
@@ -317,32 +335,32 @@ class _HomeScreenState extends State<HomeScreen> {
     required int index,
   }) {
     return GestureDetector(
+      behavior: HitTestBehavior.translucent,
       onTap: () => alertDialog('Изменить задачу', todo.title, todo.subtitle,
           buildTextSaveButton, index),
       child: FractionallySizedBox(
-        widthFactor: 0.9,
-        child: Card(
-          color: todo.isDone
-              ? Colors.green
-              : Theme.of(context).colorScheme.primary,
-          elevation: 1,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+        child: Container(
+          clipBehavior: Clip.hardEdge,
+          decoration: BoxDecoration(
+            color: todo.isDone
+                ? Colors.green
+                : Theme.of(context).colorScheme.primary,
+            borderRadius: BorderRadius.circular(CalculateSize() / 20),
           ),
           child: Slidable(
             key: const ValueKey(0),
             startActionPane: ActionPane(
               motion: const ScrollMotion(),
-              extentRatio: 0.3,
-              openThreshold: 0.3,
-              closeThreshold: 0.3,
+              extentRatio: 0.5,
+              openThreshold: 0.5,
+              closeThreshold: 0.5,
               children: [buildSliderRemove(todo)],
             ),
             endActionPane: ActionPane(
               motion: const ScrollMotion(),
-              extentRatio: 0.3,
-              openThreshold: 0.3,
-              closeThreshold: 0.3,
+              extentRatio: 0.5,
+              openThreshold: 0.5,
+              closeThreshold: 0.5,
               children: [
                 if (todo.isDone)
                   buildSliderCancel(index)
@@ -351,8 +369,20 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             child: ListTile(
-              title: Text(todo.title),
-              subtitle: Text(todo.subtitle),
+              title: Text(
+                todo.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                ),
+              ),
+              subtitle: Text(
+                todo.subtitle,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                ),
+              ),
             ),
           ),
         ),
