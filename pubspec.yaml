@@ -7,7 +7,7 @@ environment: # Настройка окружения проекта
  sdk: '>=3.0.5 <4.0.0' # Версия SDK для проекта
 
 dependencies: # Зависимости проекта
- flutter: # Зависимость Flutter SDK
+ flutter:
   sdk: flutter
  
  cupertino_icons: ^1.0.5 # Зависимость для иконок iOS в стиле Cupertino
