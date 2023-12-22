@@ -37,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void handlePopupClick(String value) {
     switch (value) {
-      case 'Выполнено все':
+      case 'Выполнить все':
         List<Todo> todos = context
             .read<TodoBloc>()
             .state
@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
           alterTodo(i);
         }
         break;
-      case 'Не решено все':
+      case 'Отменить все':
         List<Todo> todos = context
             .read<TodoBloc>()
             .state
@@ -95,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
           PopupMenuButton<String>(
             onSelected: handlePopupClick,
             itemBuilder: (BuildContext context) {
-              return {'Выполнено все', 'Не решено все', 'Удалить все'}
+              return {'Выполнить все', 'Отменить все', 'Удалить все'}
                   .map((String choice) {
                 return PopupMenuItem<String>(
                   value: choice,
@@ -275,6 +275,42 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget buildSliderRemove(Todo todo) {
+    return SlidableAction(
+      onPressed: (_) {
+        removeTodo(todo);
+      },
+      backgroundColor: Colors.red,
+      foregroundColor: Colors.white,
+      icon: Icons.delete,
+      label: 'Удалить',
+    );
+  }
+
+  SlidableAction buildSliderCancel(int index) {
+    return SlidableAction(
+      onPressed: (_) {
+        alterTodo(index);
+      },
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      foregroundColor: Colors.white,
+      icon: Icons.cancel,
+      label: 'Отменить',
+    );
+  }
+
+  SlidableAction buildSliderMake(int index) {
+    return SlidableAction(
+      onPressed: (_) {
+        alterTodo(index);
+      },
+      backgroundColor: Colors.green,
+      foregroundColor: Colors.white,
+      icon: Icons.check,
+      label: 'Выполнить',
+    );
+  }
+
   Widget buildListTile({
     required Todo todo,
     required BuildContext context,
@@ -283,52 +319,41 @@ class _HomeScreenState extends State<HomeScreen> {
     return GestureDetector(
       onTap: () => alertDialog('Изменить задачу', todo.title, todo.subtitle,
           buildTextSaveButton, index),
-      child: Card(
-        color:
-            todo.isDone ? Colors.green : Theme.of(context).colorScheme.primary,
-        elevation: 1,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Slidable(
-          key: const ValueKey(0),
-          startActionPane: ActionPane(
-            motion: const ScrollMotion(),
-            extentRatio: 0.3,
-            openThreshold: 0.3,
-            closeThreshold: 0.3,
-            children: [
-              SlidableAction(
-                onPressed: (_) {
-                  removeTodo(todo);
-                },
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                icon: Icons.delete,
-                label: 'Удалить',
-              ),
-            ],
+      child: FractionallySizedBox(
+        widthFactor: 0.9,
+        child: Card(
+          color: todo.isDone
+              ? Colors.green
+              : Theme.of(context).colorScheme.primary,
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
           ),
-          endActionPane: ActionPane(
-            motion: const ScrollMotion(),
-            extentRatio: 0.3,
-            openThreshold: 0.3,
-            closeThreshold: 0.3,
-            children: [
-              SlidableAction(
-                onPressed: (_) {
-                  alterTodo(index);
-                },
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                icon: Icons.check,
-                label: 'Выполнить',
-              ),
-            ],
-          ),
-          child: ListTile(
-            title: Text(todo.title),
-            subtitle: Text(todo.subtitle),
+          child: Slidable(
+            key: const ValueKey(0),
+            startActionPane: ActionPane(
+              motion: const ScrollMotion(),
+              extentRatio: 0.3,
+              openThreshold: 0.3,
+              closeThreshold: 0.3,
+              children: [buildSliderRemove(todo)],
+            ),
+            endActionPane: ActionPane(
+              motion: const ScrollMotion(),
+              extentRatio: 0.3,
+              openThreshold: 0.3,
+              closeThreshold: 0.3,
+              children: [
+                if (todo.isDone)
+                  buildSliderCancel(index)
+                else
+                  buildSliderMake(index),
+              ],
+            ),
+            child: ListTile(
+              title: Text(todo.title),
+              subtitle: Text(todo.subtitle),
+            ),
           ),
         ),
       ),
