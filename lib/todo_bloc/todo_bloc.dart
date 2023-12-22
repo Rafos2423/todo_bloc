@@ -70,7 +70,9 @@ class TodoBloc extends HydratedBloc<TodoEvent, TodoState> {
   ) {
     emit(state.copyWith(status: TodoStatus.loading));
     try {
+      bool isDone = state.todos[event.index].isDone;
       state.todos[event.index] = event.todo;
+      state.todos[event.index].isDone = isDone;
       emit(state.copyWith(todos: state.todos, status: TodoStatus.success));
     } catch (e) {
       emit(state.copyWith(status: TodoStatus.error));

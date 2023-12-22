@@ -284,7 +284,8 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () => alertDialog('Изменить задачу', todo.title, todo.subtitle,
           buildTextSaveButton, index),
       child: Card(
-        color: Theme.of(context).colorScheme.primary,
+        color:
+            todo.isDone ? Colors.green : Theme.of(context).colorScheme.primary,
         elevation: 1,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -293,28 +294,41 @@ class _HomeScreenState extends State<HomeScreen> {
           key: const ValueKey(0),
           startActionPane: ActionPane(
             motion: const ScrollMotion(),
+            extentRatio: 0.3,
+            openThreshold: 0.3,
+            closeThreshold: 0.3,
             children: [
               SlidableAction(
                 onPressed: (_) {
                   removeTodo(todo);
                 },
-                backgroundColor: const Color(0xFFFE4A49),
+                backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
                 icon: Icons.delete,
                 label: 'Удалить',
               ),
             ],
           ),
+          endActionPane: ActionPane(
+            motion: const ScrollMotion(),
+            extentRatio: 0.3,
+            openThreshold: 0.3,
+            closeThreshold: 0.3,
+            children: [
+              SlidableAction(
+                onPressed: (_) {
+                  alterTodo(index);
+                },
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                icon: Icons.check,
+                label: 'Выполнить',
+              ),
+            ],
+          ),
           child: ListTile(
             title: Text(todo.title),
             subtitle: Text(todo.subtitle),
-            trailing: Checkbox(
-              value: todo.isDone,
-              activeColor: Theme.of(context).colorScheme.secondary,
-              onChanged: (value) {
-                alterTodo(index);
-              },
-            ),
           ),
         ),
       ),
