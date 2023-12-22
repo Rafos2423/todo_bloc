@@ -76,7 +76,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       floatingActionButton: FloatingActionButton(
-        onPressed: () => alertDialog('Добавить задачу', null, null, buildTextAddButton, null),
+        onPressed: () => alertDialog(
+            'Добавить задачу', null, null, buildTextAddButton, null),
         backgroundColor: Theme.of(context).colorScheme.primary,
         child: const Icon(
           CupertinoIcons.add,
@@ -122,7 +123,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void alertDialog(String label, String? title, String? desc, Function function, int? index) {
+  void alertDialog(String label, String? title, String? desc, Function function,
+      int? index) {
     showDialog(
       context: context,
       builder: (context) {
@@ -223,21 +225,19 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-    Widget buildTextSaveButton({
-    required TextEditingController controller1,
-    required TextEditingController controller2,
-    required BuildContext context,
-    required int index
-  }) {
+  Widget buildTextSaveButton(
+      {required TextEditingController controller1,
+      required TextEditingController controller2,
+      required BuildContext context,
+      required int index}) {
     return TextButton(
       onPressed: () {
         editTodo(
-          Todo(
-            title: controller1.text,
-            subtitle: controller2.text,
-          ),
-          index
-        );
+            Todo(
+              title: controller1.text,
+              subtitle: controller2.text,
+            ),
+            index);
         Navigator.pop(context);
       },
       style: TextButton.styleFrom(
@@ -281,7 +281,8 @@ class _HomeScreenState extends State<HomeScreen> {
     required int index,
   }) {
     return GestureDetector(
-      onTap: () => alertDialog('Изменить задачу', todo.title, todo.subtitle, buildTextSaveButton, index),
+      onTap: () => alertDialog('Изменить задачу', todo.title, todo.subtitle,
+          buildTextSaveButton, index),
       child: Card(
         color: Theme.of(context).colorScheme.primary,
         elevation: 1,
