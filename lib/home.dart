@@ -12,6 +12,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  TextEditingController search = TextEditingController();
+
   addTodo(Todo todo) {
     context.read<TodoBloc>().add(
           AddTodo(todo),
@@ -97,16 +99,25 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Padding(
         padding: EdgeInsets.all(calculateSize() / 20),
-        child: BlocBuilder<TodoBloc, TodoState>(
-          builder: (context, state) {
-            if (state.status == TodoStatus.success) {
-              return buildListViewTodos(state: state, context: context);
-            } else if (state.status == TodoStatus.initial) {
-              return const Center(child: CircularProgressIndicator());
-            } else {
-              return Container();
-            }
-          },
+        child: Column(
+          children: [
+            const SizedBox(height: 15),
+            buildSearchBar(controller: search),
+            const SizedBox(height: 15),
+            Expanded(
+              child: BlocBuilder<TodoBloc, TodoState>(
+                builder: (context, state) {
+                  if (state.status == TodoStatus.success) {
+                    return buildListViewTodos(state: state, context: context);
+                  } else if (state.status == TodoStatus.initial) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else {
+                    return Container();
+                  }
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -275,6 +286,32 @@ class _HomeScreenState extends State<HomeScreen> {
           index: i,
         );
       },
+    );
+  }
+
+  Widget buildSearchBar({required TextEditingController controller}) {
+    return TextField(
+      cursorColor: Colors.black54,
+      controller: controller,
+      onSubmitted: (value) {},
+      decoration: InputDecoration(
+        suffixIcon: const Icon(Icons.search),
+        hintText: 'Поиск',
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            width: 2,
+            color: Theme.of(context).colorScheme.secondary,
+          ),
+          borderRadius: BorderRadius.all(Radius.circular(calculateSize() / 20)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            width: 2,
+            color: Theme.of(context).colorScheme.secondary,
+          ),
+          borderRadius: BorderRadius.all(Radius.circular(calculateSize() / 20)),
+        ),
+      ),
     );
   }
 
