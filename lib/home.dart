@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'todo_bloc/todo_bloc.dart';
 import 'data/todo.dart';
 
@@ -38,23 +37,15 @@ class _HomeScreenState extends State<HomeScreen> {
   void handlePopupClick(String value) {
     switch (value) {
       case 'Выполнить все':
-        List<Todo> todos = context
-            .read<TodoBloc>()
-            .state
-            .todos;
+        List<Todo> todos = context.read<TodoBloc>().state.todos;
         for (int i = 0; i < todos.length; i++) {
-          if (!todos[i].isDone)
-            alterTodo(i);
+          if (!todos[i].isDone) alterTodo(i);
         }
         break;
       case 'Отменить все':
-        List<Todo> todos = context
-            .read<TodoBloc>()
-            .state
-            .todos;
+        List<Todo> todos = context.read<TodoBloc>().state.todos;
         for (int i = 0; i < todos.length; i++) {
-          if (todos[i].isDone)
-            alterTodo(i);
+          if (todos[i].isDone) alterTodo(i);
         }
         break;
       case 'Удалить все':
@@ -105,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: Padding(
-        padding: EdgeInsets.all(CalculateSize() / 20),
+        padding: EdgeInsets.all(calculateSize() / 20),
         child: BlocBuilder<TodoBloc, TodoState>(
           builder: (context, state) {
             if (state.status == TodoStatus.success) {
@@ -257,22 +248,18 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  double CalculateSize() {
+  double calculateSize() {
     double width = MediaQuery.of(context).size.width;
     int length = context.read<TodoBloc>().state.todos.length;
     bool oneLine = length * 300 < width;
-
-    if (oneLine)
-      return width / length;
-    else
-      return 300;
+    return oneLine ? width / length : 300;
   }
 
   Widget buildListViewTodos({
     required TodoState state,
     required BuildContext context,
   }) {
-    var size = CalculateSize();
+    var size = calculateSize();
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: size,
@@ -280,6 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisSpacing: size / 20,
       ),
       itemCount: state.todos.length,
+      padding: const EdgeInsets.symmetric(vertical: 16),
       itemBuilder: (context, int i) {
         return buildListTile(
           todo: state.todos[i],
@@ -290,42 +278,75 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildSliderRemove(Todo todo) {
-    return SlidableAction(
-      onPressed: (_) {
-        removeTodo(todo);
-      },
-      backgroundColor: Colors.red,
-      foregroundColor: Colors.white,
-      icon: Icons.delete,
-      label: 'Удалить',
-      borderRadius: BorderRadius.circular(CalculateSize() / 20),
+  Widget buildSliderRemove() {
+    return Container(
+      padding: EdgeInsets.only(left: calculateSize() / 20),
+      alignment: Alignment.centerLeft,
+      color: Colors.red,
+      child: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.delete,
+            color: Colors.white,
+          ),
+          Text(
+            'Удалить',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  SlidableAction buildSliderCancel(int index) {
-    return SlidableAction(
-      onPressed: (_) {
-        alterTodo(index);
-      },
-      backgroundColor: Theme.of(context).colorScheme.primary,
-      foregroundColor: Colors.white,
-      icon: Icons.cancel,
-      label: 'Отменить',
-      borderRadius: BorderRadius.circular(CalculateSize() / 20),
+  Widget buildSliderCancel() {
+    return Container(
+      padding: EdgeInsets.only(right: calculateSize() / 20),
+      alignment: Alignment.centerRight,
+      color: Theme.of(context).colorScheme.primary,
+      child: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.cancel,
+            color: Colors.white,
+          ),
+          Text(
+            'Отменить',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  SlidableAction buildSliderMake(int index) {
-    return SlidableAction(
-      onPressed: (_) {
-        alterTodo(index);
-      },
-      backgroundColor: Colors.green,
-      foregroundColor: Colors.white,
-      icon: Icons.check,
-      label: 'Выполнить',
-      borderRadius: BorderRadius.circular(CalculateSize() / 20),
+  Widget buildSliderMake() {
+    return Container(
+      padding: EdgeInsets.only(right: calculateSize() / 20),
+      alignment: Alignment.centerRight,
+      color: Colors.green,
+      child: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.check,
+            color: Colors.white,
+          ),
+          Text(
+            'Выполнить',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -338,50 +359,40 @@ class _HomeScreenState extends State<HomeScreen> {
       behavior: HitTestBehavior.translucent,
       onTap: () => alertDialog('Изменить задачу', todo.title, todo.subtitle,
           buildTextSaveButton, index),
-      child: FractionallySizedBox(
-        child: Container(
-          clipBehavior: Clip.hardEdge,
-          decoration: BoxDecoration(
-            color: todo.isDone
-                ? Colors.green
-                : Theme.of(context).colorScheme.primary,
-            borderRadius: BorderRadius.circular(CalculateSize() / 20),
-          ),
-          child: Slidable(
-            key: const ValueKey(0),
-            startActionPane: ActionPane(
-              motion: const ScrollMotion(),
-              extentRatio: 0.5,
-              openThreshold: 0.5,
-              closeThreshold: 0.5,
-              children: [buildSliderRemove(todo)],
-            ),
-            endActionPane: ActionPane(
-              motion: const ScrollMotion(),
-              extentRatio: 0.5,
-              openThreshold: 0.5,
-              closeThreshold: 0.5,
-              children: [
-                if (todo.isDone)
-                  buildSliderCancel(index)
-                else
-                  buildSliderMake(index),
-              ],
-            ),
-            child: ListTile(
-              title: Text(
-                todo.title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),
+      child: Container(
+        clipBehavior: Clip.hardEdge,
+        decoration: BoxDecoration(
+          color: todo.isDone
+              ? Colors.green
+              : Theme.of(context).colorScheme.primary,
+          borderRadius: BorderRadius.circular(calculateSize() / 20),
+        ),
+        child: Dismissible(
+          background: buildSliderRemove(),
+          secondaryBackground:
+              todo.isDone ? buildSliderCancel() : buildSliderMake(),
+          key: UniqueKey(),
+          onDismissed: (DismissDirection direction) {
+            if (direction == DismissDirection.endToStart) {
+              alterTodo(index);
+            } else {
+              removeTodo(todo);
+            }
+          },
+          child: ListTile(
+            title: Text(
+              todo.title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+                fontSize: 20,
               ),
-              subtitle: Text(
-                todo.subtitle,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),
+            ),
+            subtitle: Text(
+              todo.subtitle,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
               ),
             ),
           ),
