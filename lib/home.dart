@@ -36,6 +36,12 @@ class _HomeScreenState extends State<HomeScreen> {
     context.read<TodoBloc>().add(AlterTodo(index));
   }
 
+  pinTodo(int index) {
+    context.read<TodoBloc>().add(
+          PinTodo(index),
+        );
+  }
+
   void handlePopupClick(String value) {
     switch (value) {
       case 'Выполнить все':
@@ -56,6 +62,12 @@ class _HomeScreenState extends State<HomeScreen> {
             .state
             .todos
             .forEach((todo) => removeTodo(todo));
+        break;
+      case 'Открепить все':
+        List<Todo> todos = context.read<TodoBloc>().state.todos;
+        for (int i = 0; i < todos.length; i++) {
+          if (todos[i].isPinned) pinTodo(i);
+        }
         break;
       default:
         break;
@@ -86,8 +98,12 @@ class _HomeScreenState extends State<HomeScreen> {
           PopupMenuButton<String>(
             onSelected: handlePopupClick,
             itemBuilder: (BuildContext context) {
-              return {'Выполнить все', 'Отменить все', 'Удалить все'}
-                  .map((String choice) {
+              return {
+                'Выполнить все',
+                'Отменить все',
+                'Удалить все',
+                'Открепить все'
+              }.map((String choice) {
                 return PopupMenuItem<String>(
                   value: choice,
                   child: Text(choice),
@@ -108,7 +124,22 @@ class _HomeScreenState extends State<HomeScreen> {
               child: BlocBuilder<TodoBloc, TodoState>(
                 builder: (context, state) {
                   if (state.status == TodoStatus.success) {
-                    return buildListViewTodos(state: state, context: context);
+                    return buildListViewTodos(state: state, context: context, pinned: true);
+                  } else if (state.status == TodoStatus.initial) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else {
+                    return Container();
+                  }
+                },
+              ),
+            ),
+            const SizedBox(height: 15),
+            Divider(color: Theme.of(context).colorScheme.secondary),
+            Expanded(
+              child: BlocBuilder<TodoBloc, TodoState>(
+                builder: (context, state) {
+                  if (state.status == TodoStatus.success) {
+                    return buildListViewTodos(state: state, context: context, pinned: false);
                   } else if (state.status == TodoStatus.initial) {
                     return const Center(child: CircularProgressIndicator());
                   } else {
@@ -263,18 +294,16 @@ class _HomeScreenState extends State<HomeScreen> {
     double width = MediaQuery.of(context).size.width;
     int length = context.read<TodoBloc>().state.todos.length;
     bool oneLine = length * 300 < width;
-    return oneLine ? width / length : 300;
+    return oneLine && length != 0 ? width / length : 300;
   }
 
   Widget buildListViewTodos(
-      {required TodoState state, required BuildContext context}) {
-    final todosToDisplay = search.text.isNotEmpty
-        ? state.todos
-            .where((x) =>
-                x.title.contains(search.text) ||
-                x.subtitle.contains(search.text))
-            .toList()
-        : state.todos;
+      {required TodoState state, required BuildContext context, required pinned}) {
+    final todosToDisplay = state.todos
+        .where((x) =>
+            x.isPinned == pinned &&
+            (x.title.contains(search.text) || x.subtitle.contains(search.text)))
+        .toList();
     var size = calculateSize();
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
@@ -298,9 +327,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return TextField(
       cursorColor: Colors.black54,
       controller: controller,
-      onChanged: (value) => {
-        setState(() => ())
-      },
+      onChanged: (value) => {setState(() => ())},
       decoration: InputDecoration(
         suffixIcon: const Icon(Icons.search),
         hintText: 'Поиск',
@@ -394,6 +421,32 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void deletePinned(Todo todo) async {
+    bool? confirm = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Удалить заметку?'),
+          content: const Text('Вы действительно хотите удалить заметку?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Отмена'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Удалить'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirm != null && confirm) {
+      removeTodo(todo);
+    }
+    else setState(() => ());
+  }
+
   Widget buildListTile({
     required Todo todo,
     required BuildContext context,
@@ -403,6 +456,7 @@ class _HomeScreenState extends State<HomeScreen> {
       behavior: HitTestBehavior.translucent,
       onTap: () => alertDialog('Изменить задачу', todo.title, todo.subtitle,
           buildTextSaveButton, index),
+      onDoubleTap: () => pinTodo(index),
       child: Container(
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
@@ -419,11 +473,18 @@ class _HomeScreenState extends State<HomeScreen> {
           onDismissed: (DismissDirection direction) {
             if (direction == DismissDirection.endToStart) {
               alterTodo(index);
-            } else {
-              removeTodo(todo);
+            } else if (direction == DismissDirection.startToEnd) {
+              if (todo.isPinned) {
+                deletePinned(todo);
+              } else {
+                removeTodo(todo);
+              }
             }
           },
           child: ListTile(
+            trailing: todo.isPinned
+                ? const Icon(Icons.push_pin_rounded, color: Colors.white)
+                : null,
             title: Text(
               todo.title,
               style: const TextStyle(
