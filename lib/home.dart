@@ -266,10 +266,15 @@ class _HomeScreenState extends State<HomeScreen> {
     return oneLine ? width / length : 300;
   }
 
-  Widget buildListViewTodos({
-    required TodoState state,
-    required BuildContext context,
-  }) {
+  Widget buildListViewTodos(
+      {required TodoState state, required BuildContext context}) {
+    final todosToDisplay = search.text.isNotEmpty
+        ? state.todos
+            .where((x) =>
+                x.title.contains(search.text) ||
+                x.subtitle.contains(search.text))
+            .toList()
+        : state.todos;
     var size = calculateSize();
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
@@ -277,11 +282,11 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisSpacing: size / 20,
         mainAxisSpacing: size / 20,
       ),
-      itemCount: state.todos.length,
+      itemCount: todosToDisplay.length,
       padding: const EdgeInsets.symmetric(vertical: 16),
       itemBuilder: (context, int i) {
         return buildListTile(
-          todo: state.todos[i],
+          todo: todosToDisplay[i],
           context: context,
           index: i,
         );
@@ -293,7 +298,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return TextField(
       cursorColor: Colors.black54,
       controller: controller,
-      onSubmitted: (value) {},
+      onChanged: (value) => {
+        setState(() => ())
+      },
       decoration: InputDecoration(
         suffixIcon: const Icon(Icons.search),
         hintText: 'Поиск',
