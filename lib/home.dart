@@ -80,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
           'Список дел',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        actions: <Widget>[
+        actions: [
           PopupMenuButton<String>(
             onSelected: handlePopupClick,
             itemBuilder: (BuildContext context) {
@@ -294,7 +294,7 @@ class _HomeScreenState extends State<HomeScreen> {
             'Удалить',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 20,
+              fontSize: 16,
             ),
           ),
         ],
@@ -318,7 +318,7 @@ class _HomeScreenState extends State<HomeScreen> {
             'Отменить',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 20,
+              fontSize: 16,
             ),
           ),
         ],
@@ -342,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
             'Выполнить',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 20,
+              fontSize: 16,
             ),
           ),
         ],
