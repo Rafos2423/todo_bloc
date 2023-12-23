@@ -3,23 +3,20 @@ class Todo {
   final String subtitle;
   bool isDone;
   bool isPinned;
-  int indexPinned;
 
-  Todo({this.title = '', this.subtitle = '', this.isDone = false, this.isPinned = false, this.indexPinned = -1});
+  Todo({this.title = '', this.subtitle = '', this.isDone = false, this.isPinned = false});
 
   Todo copyWith({
     String? title,
     String? subtitle,
     bool? isDone,
     bool? isPinned,
-    int? indexPinned,
   }) {
     return Todo(
       title: title ?? this.title,
       subtitle: subtitle ?? this.subtitle,
       isDone: isDone ?? this.isDone,
       isPinned: isPinned ?? this.isPinned,
-      indexPinned: indexPinned ?? this.indexPinned,
     );
   }
 
@@ -28,12 +25,11 @@ class Todo {
         title: json['title'],
         subtitle: json['subtitle'],
         isDone: json['isDone'],
-        isPinned: json['isPinned'],
-        indexPinned: json['indexPinned']);
+        isPinned: json['isPinned']);
   }
 
   Map<String, dynamic> toJson() {
-    return {'title': title, 'subtitle': subtitle, 'isDone': isDone, 'isPinned': isPinned, 'indexPinned': indexPinned};
+    return {'title': title, 'subtitle': subtitle, 'isDone': isDone, 'isPinned': isPinned};
   }
 
   @override
@@ -43,7 +39,6 @@ class Todo {
    subtitle: $subtitle\n
    isDone: $isDone\n
    isPinned: $isPinned\n
-   indexPinned: $indexPinned\n
   }''';
   }
 }

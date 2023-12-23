@@ -124,22 +124,8 @@ class _HomeScreenState extends State<HomeScreen> {
               child: BlocBuilder<TodoBloc, TodoState>(
                 builder: (context, state) {
                   if (state.status == TodoStatus.success) {
-                    return buildListViewTodos(state: state, context: context, pinned: true);
-                  } else if (state.status == TodoStatus.initial) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else {
-                    return Container();
-                  }
-                },
-              ),
-            ),
-            const SizedBox(height: 15),
-            Divider(color: Theme.of(context).colorScheme.secondary),
-            Expanded(
-              child: BlocBuilder<TodoBloc, TodoState>(
-                builder: (context, state) {
-                  if (state.status == TodoStatus.success) {
-                    return buildListViewTodos(state: state, context: context, pinned: false);
+                    return buildListViewTodos(
+                        state: state, context: context);
                   } else if (state.status == TodoStatus.initial) {
                     return const Center(child: CircularProgressIndicator());
                   } else {
@@ -298,12 +284,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildListViewTodos(
-      {required TodoState state, required BuildContext context, required pinned}) {
+      {required TodoState state,
+      required BuildContext context}) {
+    
+    state.todos.sort((a, b) => (b.isPinned ? 1 : 0).compareTo(a.isPinned ? 1 : 0));
+
     final todosToDisplay = state.todos
-        .where((x) =>
-            x.isPinned == pinned &&
-            (x.title.contains(search.text) || x.subtitle.contains(search.text)))
+        .where((x) => x.title.contains(search.text) || x.subtitle.contains(search.text))
         .toList();
+
+    final todosToDisplayCopy = List.from(todosToDisplay);
+
+    todosToDisplay.sort((a, b) => b.isPinned.toString().compareTo(a.isPinned.toString()));
     var size = calculateSize();
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
@@ -311,11 +303,11 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisSpacing: size / 20,
         mainAxisSpacing: size / 20,
       ),
-      itemCount: todosToDisplay.length,
+      itemCount: todosToDisplayCopy.length,
       padding: const EdgeInsets.symmetric(vertical: 16),
       itemBuilder: (context, int i) {
         return buildListTile(
-          todo: todosToDisplay[i],
+          todo: todosToDisplayCopy[i],
           context: context,
           index: i,
         );
@@ -443,8 +435,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     if (confirm != null && confirm) {
       removeTodo(todo);
-    }
-    else setState(() => ());
+    } else
+      setState(() => ());
   }
 
   Widget buildListTile({

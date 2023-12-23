@@ -86,18 +86,8 @@ class TodoBloc extends HydratedBloc<TodoEvent, TodoState> {
   ) {
     emit(state.copyWith(status: TodoStatus.loading));
     try {
-
-      List<Todo> temp = List.from(state.todos);
-
-      if (!state.todos[event.index].isPinned) {
-        temp[event.index].indexPinned = event.index;
-        temp[event.index].isPinned = true;
-      }
-      else{
-        temp[event.index].indexPinned = -1;
-        temp[event.index].isPinned = false;
-      }
-      emit(state.copyWith(todos: temp, status: TodoStatus.success));
+      state.todos[event.index].isPinned = !state.todos[event.index].isPinned;
+      emit(state.copyWith(todos: state.todos, status: TodoStatus.success));
     } catch (e) {
       emit(state.copyWith(status: TodoStatus.error));
     }
